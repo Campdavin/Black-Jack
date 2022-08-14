@@ -1,13 +1,19 @@
+// plan to add gif to winning/losing conditions
+// addd conditions for if player sum = 22 and message 'Busted you're so close'
+
 var dealerSum = 0;
-var yourSum = 0;
+var playerSum = 0;
 
 var dealerAcecount = 0;
-var yourAceCount = 0; //A, 2 + K-> 1 + 2 + 10;
+var playerAceCount = 0; //A, 2 + K-> 1 + 2 + 10;
 
 var hidden;
 var deck;
+var images;
 
 var canHit = true;  //allows the player to draw while yourSum <= 21
+
+
 
 window.onload = function () {
     buildDeck();
@@ -32,9 +38,9 @@ function buildDeck() {
 function shuffleDeck() {
     for (let i = 0; i < deck.length; i++) {
         let j = Math.floor(Math.random() * deck.length); // (0-1) * 52 => (0-51.999)
-        let temp = deck[i];
+        let shuffledDeck = deck[i];
         deck[i] = deck[j];
-        deck[j] = temp;
+        deck[j] = shuffledDeck;
     }
     console.log(deck);
 }
@@ -57,51 +63,64 @@ function startGame() {
     console.log(dealerSum);
 
     for (let i = 0; i < 2; i++) {
-        let cardImg = document.createElement("img");
+        let cardImg = document.createElement("img"); // create image tag
         let card = deck.pop();
-        cardImg.src = "./cards/" + card + ".png";
-        yourSum += getValue(card);
-        yourAceCount += checkAce(card);
-        document.getElementById("your-cards").append(cardImg);
+        cardImg.src = "./cards/" + card + ".png"; //set source of the image to cardImg.src
+        playerSum += getValue(card);
+        playerAceCount += checkAce(card);
+        document.getElementById("player-cards").append(cardImg);
 
     }
-    console.log(yourSum);
+    console.log(playerSum);
     document.getElementById("hit").addEventListener("click", hit);
     document.getElementById("stay").addEventListener("click", stay);
 }
 
 function stay() {
     dealerSum = reduceAce(dealerSum, dealerAcecount);
-    yourSum = reduceAce(yourSum, yourAceCount);
+    playerSum = reduceAce(playerSum, playerAceCount);
 
     canHit = false;
-    document.getElementById("hidden").src = "./cards/" + hidden + ".png";
+    document.getElementById("hidden").src = "./cards/" + hidden + ".png"; // reveal the hidden  card when  player ends the  turn
 
     let message = "";
-    if (yourSum > 21)
-        message = "You Lose!"
+
+    if (playerSum == 22 || playerSum == 23) {
+        message = `You were so close! You Lose! Total sum of your cards is ${playerSum}.Better luck next time!`
+        document.querySelector("#close").style.display ='inline';
+    }
+    else if (playerSum > 21) {
+        message = `You are Busted! You Lose! Total sum of your cards is ${playerSum}.Better luck next time!`
+        document.querySelector("#busted").style.display ='inline';
+    }
 
     else if (dealerSum > 21) {
-        message = "You Win!"
+        message = `Dealer is busted! You Win! Total sum of dealer cards is ${dealerSum}.Lady Luck is smiling on you today :)`
+        document.querySelector("#lucky").style.display ='inline';
+        
     }
     // both you and dealer <=21
-    else if (yourSum == dealerSum) {
-        message = "Draw!";
+    else if (playerSum == dealerSum) {
+        message = "This round has ended in a Tie!";
+        document.querySelector("#tie").style.display ='inline';
     }
 
-    else if (yourSum > dealerSum) {
-        message = "You Win!";
+    else if (playerSum > dealerSum) {
+        message = `Your cards sum of ${playerSum} trumps dealer's! You Win!`;
+        document.querySelector("#trump").style.display ='inline';
+        
     }
 
-    else if (yourSum < dealerSum) {
-        message = "You Lose!";
+    else if (playerSum < dealerSum) {
+        message = `Your cards sum of ${playerSum} is less than dealer's! You Lose! Better luck next time!`;
+        document.querySelector("#lose").style.display ='inline';
     }
 
-    document.getElementById("your-sum").innerText = yourSum;
+    document.getElementById("player-sum").innerText = playerSum;
     document.getElementById("dealer-sum").innerText = dealerSum;
     document.getElementById("results").innerText = message;
-}
 
+}
 
 function hit() {
     if (!canHit) {
@@ -111,23 +130,23 @@ function hit() {
     let cardImg = document.createElement("img");
     let card = deck.pop();
     cardImg.src = "./cards/" + card + ".png";
-    yourSum += getValue(card);
-    yourAceCount += checkAce(card);
-    document.getElementById("your-cards").append(cardImg);
+    playerSum += getValue(card);
+    playerAceCount += checkAce(card);
+    document.getElementById("player-cards").append(cardImg);
 
-    if (reduceAce(yourSum, yourAceCount) > 21)
+    if (reduceAce(playerSum, playerAceCount) > 21)
         canHit = false;
 }
 
 function getValue(card) {
-    let data = card.split("-"); // "4-C"  ->["4", "C"]
+    let data = card.split("-"); // "4-C"  ->["4", "C"] //  splitting  the value and types of the card tothe  individual components
     let value = data[0];
 
-    if (isNaN(value)) { //A J Q K 
+    if (isNaN(value)) { //A J Q K // account for the graphic (non-number) of the suite
         if (value == 'A') {
             return 11;
         }
-        return 10;
+        return 10; // this is for J Q K
     }
     return parseInt(value);
 }
